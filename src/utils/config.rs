@@ -35,6 +35,17 @@ pub struct NetworkConfig {
     pub connection_timeout_seconds: u64,
     pub auto_connect: bool,
     pub ethernet_preferred: bool,
+    // Enhanced network features
+    pub backup_networks: Vec<BackupNetwork>,
+    pub auto_scan_open_networks: bool,
+    pub prefer_saved_networks: bool,
+    pub max_connection_attempts: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BackupNetwork {
+    pub ssid: String,
+    pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,6 +54,9 @@ pub struct WebConfig {
     pub host: String,
     pub enable_cors: bool,
     pub static_files_path: String,
+    // Enhanced web features
+    pub auto_launch_interface: bool,
+    pub show_qr_code: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,6 +65,10 @@ pub struct BootConfig {
     pub default_os: Option<String>,
     pub show_advanced_options: bool,
     pub gaming_mode: bool,
+    // Enhanced boot features
+    pub auto_web_on_timeout: bool,
+    pub keyboard_interrupt_enabled: bool,
+    pub show_ip_on_screen: bool,
 }
 
 impl Default for Config {
@@ -69,23 +87,41 @@ impl Default for Config {
                 auto_save_working_config: true,
             },
             network: NetworkConfig {
-                wifi_ssid: None,
-                wifi_password: None,
+                wifi_ssid: Some("YourHomeWiFi".to_string()),
+                wifi_password: Some("YourWiFiPassword".to_string()),
                 connection_timeout_seconds: 3,
                 auto_connect: true,
-                ethernet_preferred: true,
+                ethernet_preferred: false,
+                backup_networks: vec![
+                    BackupNetwork {
+                        ssid: "YourPhoneHotspot".to_string(),
+                        password: "hotspot123".to_string(),
+                    },
+                    BackupNetwork {
+                        ssid: "GuestWiFi".to_string(),
+                        password: "".to_string(), // Open network
+                    },
+                ],
+                auto_scan_open_networks: true,
+                prefer_saved_networks: true,
+                max_connection_attempts: 3,
             },
             web: WebConfig {
                 port: 8080,
                 host: "0.0.0.0".to_string(),
                 enable_cors: true,
                 static_files_path: "assets/web".to_string(),
+                auto_launch_interface: true,
+                show_qr_code: true,
             },
             boot: BootConfig {
-                menu_timeout_seconds: 10,
+                menu_timeout_seconds: 3, // 3 seconds only
                 default_os: None,
                 show_advanced_options: false,
                 gaming_mode: true,
+                auto_web_on_timeout: true,
+                keyboard_interrupt_enabled: true,
+                show_ip_on_screen: true,
             },
         }
     }

@@ -4,6 +4,12 @@
 [system]
 device_type = "auto"  # auto, raspberry-pi, anbernic, orange-pi, etc.
 log_level = "info"    # error, warn, info, debug, trace
+config_persist_path = "/boot/dos_# DOS Safar Enhanced Configuration
+# Universal ARM Boot Manager for gaming handhelds and Raspberry Pi
+
+[system]
+device_type = "auto"  # auto, raspberry-pi, anbernic, orange-pi, etc.
+log_level = "info"    # error, warn, info, debug, trace
 config_persist_path = "/boot/dos_safar/"
 
 [hardware]
@@ -15,18 +21,24 @@ auto_save_working_config = true
 
 [network]
 # Primary WiFi settings (Pre-configured)
-wifi_ssid = "YourHomeWiFi"          # ← ضع اسم الشبكة هنا
-wifi_password = "YourWiFiPassword"   # ← ضع كلمة المرور هنا
+wifi_ssid = "A7rf"          # ← ضع اسم الشبكة هنا
+wifi_password = "11111111aA"   # ← ضع كلمة المرور هنا
 connection_timeout_seconds = 3
 auto_connect = true
 ethernet_preferred = false
 
 # Backup WiFi networks (for fallback)
-backup_networks = [
-    { ssid = "YourPhoneHotspot", password = "hotspot123" },
-    { ssid = "GuestWiFi", password = "" },  # Open network
-    { ssid = "WorkWiFi", password = "work2024" }
-]
+[[network.backup_networks]]
+ssid = "YourPhoneHotspot"
+password = "hotspot123"
+
+[[network.backup_networks]]
+ssid = "GuestWiFi"
+password = ""  # Open network
+
+[[network.backup_networks]]
+ssid = "WorkWiFi"
+password = "work2024"
 
 # Network behavior
 auto_scan_open_networks = true      # البحث عن شبكات مفتوحة إذا فشل الاتصال

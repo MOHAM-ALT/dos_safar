@@ -99,6 +99,7 @@ impl WebServer {
             .route("/remote", get(serve_remote_control))
             .route("/systems", get(serve_systems_manager))
             .route("/settings", get(serve_settings))
+            .route("/troubleshoot", get(serve_troubleshoot)) // ← صفحة الـ troubleshooting الجديدة
             
             // Static files
             .nest_service("/static", ServeDir::new(&self.config.web.static_files_path))

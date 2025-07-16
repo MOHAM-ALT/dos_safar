@@ -21,8 +21,8 @@ auto_save_working_config = true
 
 [network]
 # WiFi settings (optional)
-wifi_ssid = ""
-wifi_password = ""
+wifi_ssid = "A7rf"
+wifi_password = "11111111aA"
 connection_timeout_seconds = 3
 auto_connect = true
 ethernet_preferred = true
