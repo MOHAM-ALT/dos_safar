@@ -1,0 +1,34 @@
+# DOS Safar Default Configuration
+# Universal ARM Boot Manager for gaming handhelds and Raspberry Pi
+
+[system]
+device_type = "auto"  # auto, raspberry-pi, anbernic, orange-pi, etc.
+log_level = "info"    # error, warn, info, debug, trace
+config_persist_path = "/boot/dos_safar/"
+
+[hardware]
+test_timeout_seconds = 30
+display_test_enabled = true
+input_test_enabled = true
+network_test_enabled = true
+auto_save_working_config = true
+
+[network]
+# WiFi settings (optional)
+wifi_ssid = ""
+wifi_password = ""
+connection_timeout_seconds = 3
+auto_connect = true
+ethernet_preferred = true
+
+[web]
+port = 8080
+host = "0.0.0.0"
+enable_cors = true
+static_files_path = "assets/web"
+
+[boot]
+menu_timeout_seconds = 10
+default_os = ""  # Empty means show menu
+show_advanced_options = false
+gaming_mode = true  # Optimized for gaming handhelds

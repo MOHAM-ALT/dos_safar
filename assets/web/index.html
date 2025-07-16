@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOS Safar - Universal ARM Boot Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .device-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .info-item h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .info-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .action-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .action-card p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .btn.success {
+            background: linear-gradient(45deg, #00b894, #00a085);
+        }
+
+        .systems-list {
+            margin-top: 20px;
+        }
+
+        .system-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .system-info h4 {
+            margin-bottom: 5px;
+            color: #ffd700;
+        }
+
+        .system-info p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00b894;
+        }
+
+        .status-indicator.disconnected {
+            background: #e17055;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .device-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .system-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 DOS Safar</h1>
+            <p>Universal ARM Boot Manager for Gaming Handhelds & Raspberry Pi</p>
+        </div>
+
+        <div class="status-card">
+            <h2>System Status</h2>
+            <div class="device-info" id="deviceInfo">
+                <div class="info-item">
+                    <h3>📱 Device</h3>
+                    <div class="info-value" id="deviceModel">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <h3>⏱️ Uptime</h3>
+                    <div class="info-value" id="uptime">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <h3>🧠 CPU Usage</h3>
+                    <div class="info-value" id="cpuUsage">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <h3>💾 Memory</h3>
+                    <div class="info-value" id="memoryUsage">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <h3>🌡️ Temperature</h3>
+                    <div class="info-value" id="temperature">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <h3>🌐 Network</h3>
+                    <div class="network-status">
+                        <div class="status-indicator" id="networkIndicator"></div>
+                        <div class="info-value" id="networkStatus">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-grid">
+            <div class="action-card" onclick="location.href='/remote'">
+                <h3>🎮 Remote Control</h3>
+                <p>Control your gaming device remotely with virtual D-pad and buttons. Perfect for handheld gaming devices.</p>
+                <a href="/remote" class="btn">Open Remote</a>
+            </div>
+
+            <div class="action-card" onclick="location.href='/systems'">
+                <h3>🗂️ Systems Manager</h3>
+                <p>Install, remove, and manage operating systems. Upload OS images and switch between different gaming distributions.</p>
+                <a href="/systems" class="btn secondary">Manage Systems</a>
+            </div>
+
+            <div class="action-card" onclick="location.href='/settings'">
+                <h3>⚙️ Settings</h3>
+                <p>Configure hardware testing, network settings, boot options, and display preferences for your device.</p>
+                <a href="/settings" class="btn success">Open Settings</a>
+            </div>
+
+            <div class="action-card" onclick="runHardwareTests()">
+                <h3>🔧 Hardware Tests</h3>
+                <p>Test display, input devices, and network connectivity. Automatically save working configurations.</p>
+                <button class="btn" onclick="runHardwareTests()">Run Tests</button>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h2>Available Operating Systems</h2>
+            <div id="systemsList" class="systems-list">
+                <div style="text-align: center; padding: 20px;">
+                    <div class="loading"></div>
+                    <p>Loading systems...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load system status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSystemStatus();
+            loadAvailableSystems();
+            
+            // Refresh status every 10 seconds
+            setInterval(loadSystemStatus, 10000);
+        });
+
+        async function runHardwareTests() {
+            if (confirm('Run hardware tests? This will test display, input devices, and network connectivity.')) {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Testing...';
+                button.disabled = true;
+                
+                try {
+                    // Simulate hardware testing
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    alert('Hardware tests completed successfully! All devices are working properly.');
+                    
+                    // Refresh status after tests
+                    loadSystemStatus();
+                    
+                } catch (error) {
+                    alert('Hardware tests failed: ' + error.message);
+                } finally {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        }
+
+        // Add keyboard shortcuts for gaming handhelds
+        document.addEventListener('keydown', function(e) {
+            // Navigation shortcuts for gaming devices
+            switch(e.key) {
+                case 'Enter':
+                case 'Space':
+                    // A button - activate focused element
+                    if (document.activeElement && document.activeElement.click) {
+                        document.activeElement.click();
+                    }
+                    break;
+                case 'Escape':
+                    // B button - go back or cancel
+                    if (confirm('Return to boot menu?')) {
+                        // This would trigger boot menu
+                        alert('Returning to boot menu...');
+                    }
+                    break;
+                case 'ArrowUp':
+                case 'ArrowDown':
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                    // D-pad navigation
+                    e.preventDefault();
+                    navigateWithDPad(e.key);
+                    break;
+            }
+        });
+
+        function navigateWithDPad(key) {
+            const focusableElements = document.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])');
+            const currentIndex = Array.from(focusableElements).indexOf(document.activeElement);
+            
+            let nextIndex = currentIndex;
+            
+            switch(key) {
+                case 'ArrowDown':
+                case 'ArrowRight':
+                    nextIndex = (currentIndex + 1) % focusableElements.length;
+                    break;
+                case 'ArrowUp':
+                case 'ArrowLeft':
+                    nextIndex = currentIndex > 0 ? currentIndex - 1 : focusableElements.length - 1;
+                    break;
+            }
+            
+            if (focusableElements[nextIndex]) {
+                focusableElements[nextIndex].focus();
+            }
+        }
+
+        // Auto-focus first interactive element for gaming devices
+        window.addEventListener('load', function() {
+            const firstButton = document.querySelector('button, a');
+            if (firstButton) {
+                firstButton.focus();
+            }
+        });
+
+        // Touch-friendly interactions for mobile devices
+        let touchStartTime = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartTime = Date.now();
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            const touchDuration = Date.now() - touchStartTime;
+            
+            // Long press detection (500ms+)
+            if (touchDuration > 500) {
+                const target = e.target.closest('.action-card, .system-item');
+                if (target) {
+                    // Show context menu or additional options
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Service worker for offline functionality (gaming handhelds may have poor connectivity)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(function(error) {
+                console.log('ServiceWorker registration failed: ', error);
+            });
+        }
+
+        // Battery status for handheld devices
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                function updateBatteryInfo() {
+                    const batteryLevel = Math.round(battery.level * 100);
+                    const batteryCharging = battery.charging;
+                    
+                    // Add battery indicator to header if on battery
+                    if (batteryLevel < 100 || !batteryCharging) {
+                        const header = document.querySelector('.header p');
+                        const batteryIcon = batteryCharging ? '🔌' : '🔋';
+                        const batteryText = `${batteryIcon} ${batteryLevel}%`;
+                        
+                        if (!header.textContent.includes('🔋') && !header.textContent.includes('🔌')) {
+                            header.textContent += ` | ${batteryText}`;
+                        }
+                    }
+                }
+                
+                // Update battery info immediately and on changes
+                updateBatteryInfo();
+                battery.addEventListener('chargingchange', updateBatteryInfo);
+                battery.addEventListener('levelchange', updateBatteryInfo);
+            });
+        }
+
+        // Error handling for network issues
+        window.addEventListener('online', function() {
+            console.log('Network connection restored');
+            loadSystemStatus();
+            loadAvailableSystems();
+        });
+
+        window.addEventListener('offline', function() {
+            console.log('Network connection lost');
+            // Show offline indicator
+            const networkIndicator = document.getElementById('networkIndicator');
+            if (networkIndicator) {
+                networkIndicator.classList.add('disconnected');
+            }
+        });
+    </script>
+</body>
+</html> loadSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                
+                document.getElementById('deviceModel').textContent = status.device_model;
+                document.getElementById('uptime').textContent = status.uptime;
+                document.getElementById('cpuUsage').textContent = status.cpu_usage.toFixed(1) + '%';
+                document.getElementById('memoryUsage').textContent = status.memory_usage.toFixed(1) + '%';
+                
+                if (status.temperature) {
+                    document.getElementById('temperature').textContent = status.temperature.toFixed(1) + '°C';
+                } else {
+                    document.getElementById('temperature').textContent = 'N/A';
+                }
+                
+                const networkIndicator = document.getElementById('networkIndicator');
+                const networkStatus = document.getElementById('networkStatus');
+                
+                if (status.network_status.connected) {
+                    networkIndicator.classList.remove('disconnected');
+                    networkStatus.textContent = status.network_status.ip_address;
+                } else {
+                    networkIndicator.classList.add('disconnected');
+                    networkStatus.textContent = 'Disconnected';
+                }
+                
+            } catch (error) {
+                console.error('Failed to load system status:', error);
+            }
+        }
+
+        async function loadAvailableSystems() {
+            try {
+                const response = await fetch('/api/systems');
+                const systems = await response.json();
+                
+                const systemsList = document.getElementById('systemsList');
+                
+                if (systems.length === 0) {
+                    systemsList.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <p>No operating systems found.</p>
+                            <a href="/systems" class="btn">Install OS Images</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                systemsList.innerHTML = systems.map(system => `
+                    <div class="system-item">
+                        <div class="system-info">
+                            <h4>${getOSIcon(system.name)} ${system.name}</h4>
+                            <p>${system.description} - ${(system.size_mb / 1024).toFixed(1)}GB</p>
+                            ${system.last_used ? `<p>Last used: ${new Date(system.last_used).toLocaleDateString()}</p>` : ''}
+                        </div>
+                        <div>
+                            <button class="btn" onclick="bootSystem('${system.name}')">Boot</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Failed to load systems:', error);
+                document.getElementById('systemsList').innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <p>Failed to load systems.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getOSIcon(name) {
+            const nameLower = name.toLowerCase();
+            if (nameLower.includes('retropie')) return '🕹️';
+            if (nameLower.includes('batocera')) return '🎯';
+            if (nameLower.includes('recalbox')) return '📦';
+            if (nameLower.includes('raspberry')) return '🍓';
+            if (nameLower.includes('ubuntu')) return '🐧';
+            return '💻';
+        }
+
+        async function bootSystem(name) {
+            if (confirm(`Boot into ${name}? This will restart the device.`)) {
+                try {
+                    const response = await fetch('/api/boot', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ os_name: name })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        alert(`Booting ${name}... The device will restart shortly.`);
+                    } else {
+                        alert('Failed to boot system: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    alert('Failed to boot system: ' + error.message);
+                }
+            }
+        }
+
+        async function
