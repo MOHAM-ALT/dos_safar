@@ -1,0 +1,159 @@
+# DOS Safar LCD Optimized Configuration
+# File: config/lcd-optimized.toml
+# Optimized for LCD displays like those from goodtft/LCD-show
+
+[system]
+device_type = "auto"
+log_level = "info"
+config_persist_path = "/boot/dos_safar/"
+
+[hardware]
+test_timeout_seconds = 30
+display_test_enabled = true
+input_test_enabled = true
+network_test_enabled = true
+auto_save_working_config = true
+
+[network]
+wifi_ssid = "YourWiFi"
+wifi_password = "YourPassword"
+connection_timeout_seconds = 3
+auto_connect = true
+ethernet_preferred = false
+
+# Backup networks for fallback
+[[network.backup_networks]]
+ssid = "YourPhoneHotspot"
+password = "hotspot123"
+
+[[network.backup_networks]]
+ssid = "GuestWiFi"
+password = ""
+
+auto_scan_open_networks = true
+prefer_saved_networks = true
+max_connection_attempts = 3
+
+[web]
+port = 8080
+host = "0.0.0.0"
+enable_cors = true
+static_files_path = "assets/web"
+auto_launch_interface = true
+show_qr_code = true
+
+[boot]
+menu_timeout_seconds = 3
+default_os = ""
+show_advanced_options = false
+gaming_mode = true
+auto_web_on_timeout = true
+keyboard_interrupt_enabled = true
+show_ip_on_screen = true
+
+# LCD Display Configuration
+[lcd]
+enabled = true
+auto_detect = true
+driver = "auto"  # auto, ili9341, st7735, ili9486, st7789, ssd1306
+interface = "spi"  # spi, parallel, i2c
+size_inch = 3.5
+rotation = 0  # 0, 90, 180, 270 degrees
+
+# SPI Configuration
+spi_bus = 0
+spi_device = 0
+spi_speed_hz = 32000000  # 32MHz
+
+# GPIO Pin Configuration
+gpio_cs = 8    # SPI Chip Select (CE0)
+gpio_dc = 24   # Data/Command pin
+gpio_rst = 25  # Reset pin
+gpio_bl = 18   # Backlight pin (PWM0)
+
+# Touch Screen Configuration
+touch_enabled = true
+touch_device = "/dev/input/touchscreen"
+calibration_matrix = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]  # Identity matrix
+swap_xy = false
+invert_x = false
+invert_y = false
+pressure_threshold = 100
+
+# LCD Display Profiles for different sizes
+[lcd.profiles]
+
+[lcd.profiles.ili9341_2_4]
+name = "2.4 inch ILI9341"
+driver = "ili9341"
+resolution = [240, 320]
+size_inch = 2.4
+rotation = 0
+device_tree_overlay = "ili9341"
+
+[lcd.profiles.ili9341_2_8]
+name = "2.8 inch ILI9341"
+driver = "ili9341"
+resolution = [240, 320]
+size_inch = 2.8
+rotation = 0
+device_tree_overlay = "ili9341"
+
+[lcd.profiles.ili9341_3_2]
+name = "3.2 inch ILI9341"
+driver = "ili9341"
+resolution = [240, 320]
+size_inch = 3.2
+rotation = 0
+device_tree_overlay = "ili9341"
+
+[lcd.profiles.st7735_1_8]
+name = "1.8 inch ST7735"
+driver = "st7735"
+resolution = [128, 160]
+size_inch = 1.8
+rotation = 0
+device_tree_overlay = "st7735r"
+
+[lcd.profiles.ili9486_3_5]
+name = "3.5 inch ILI9486"
+driver = "ili9486"
+resolution = [320, 480]
+size_inch = 3.5
+rotation = 0
+device_tree_overlay = "ili9486"
+
+[lcd.profiles.st7789_2_0]
+name = "2.0 inch ST7789"
+driver = "st7789"
+resolution = [240, 240]
+size_inch = 2.0
+rotation = 0
+device_tree_overlay = "st7789v"
+
+# Gaming optimizations for small LCD screens
+[display]
+auto_detect_display = true
+preferred_resolution = "auto"  # Will be set based on LCD detection
+fallback_resolution = "240x320"
+refresh_rate = 60
+color_depth = 16  # 16-bit for better performance on small LCDs
+overscan_compensation = false
+pixel_perfect_scaling = true
+enable_gpu_acceleration = true
+
+# Small screen UI optimizations
+[display.lcd_ui]
+font_scaling = 1.2  # Larger fonts for small screens
+button_size_multiplier = 1.5  # Larger touch targets
+menu_item_height = 40  # Minimum height in pixels
+icon_size = 32  # Icon size in pixels
+margin_size = 8  # Margin around UI elements
+
+# Performance optimizations for LCD displays
+[performance]
+gpu_memory_split = 128  # MB for GPU
+cpu_governor = "ondemand"
+gpu_frequency = 500  # MHz
+enable_framebuffer_acceleration = true
+reduce_blanking = true

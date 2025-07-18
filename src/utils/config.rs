@@ -10,7 +10,27 @@ pub struct Config {
     pub network: NetworkConfig,
     pub web: WebConfig,
     pub boot: BootConfig,
+    pub lcd: LcdConfig, // إضافة جديدة
 }
+// إضافة في نهاية Default::default()
+lcd: LcdConfig {
+    enabled: true,
+    auto_detect: true,
+    driver: "auto".to_string(),
+    interface: "spi".to_string(),
+    size_inch: 3.5,
+    rotation: 0,
+    spi_bus: 0,
+    spi_device: 0,
+    spi_speed_hz: 32000000,
+    gpio_cs: Some(8),
+    gpio_dc: Some(24),
+    gpio_rst: Some(25),
+    gpio_bl: Some(18),
+    touch_enabled: true,
+    touch_device: "/dev/input/touchscreen".to_string(),
+    calibration_matrix: vec![1.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+},
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SystemConfig {
@@ -47,7 +67,26 @@ pub struct BackupNetwork {
     pub ssid: String,
     pub password: String,
 }
-
+// إضافة بعد WebConfig
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LcdConfig {
+    pub enabled: bool,
+    pub auto_detect: bool,
+    pub driver: String,
+    pub interface: String,
+    pub size_inch: f32,
+    pub rotation: u32,
+    pub spi_bus: u8,
+    pub spi_device: u8,
+    pub spi_speed_hz: u32,
+    pub gpio_cs: Option<u8>,
+    pub gpio_dc: Option<u8>,
+    pub gpio_rst: Option<u8>,
+    pub gpio_bl: Option<u8>,
+    pub touch_enabled: bool,
+    pub touch_device: String,
+    pub calibration_matrix: Vec<f32>,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WebConfig {
     pub port: u16,

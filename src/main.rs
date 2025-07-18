@@ -13,7 +13,7 @@ use hardware::device_detect::DeviceDetector;
 use hardware::display::DisplayTester;
 use hardware::input::InputTester;
 use hardware::network::NetworkManager;
-use bootloader::menu::BootMenu;
+use hardware::lcd_display::LcdDisplayDetector; // إضافة جديدةuse bootloader::menu::BootMenu;
 use remote::web_server::WebServer;
 use utils::config::Config;
 use utils::logger::init_logger;
@@ -141,7 +141,36 @@ async fn run_hardware_tests(device_info: &hardware::device_detect::DeviceInfo) -
         Ok(controllers) => info!("Found {} input devices", controllers.len()),
         Err(e) => warn!("Input test failed: {}", e),
     }
-
+// إضافة قبل "All tests completed"
+// Test LCD displays
+info!("Testing LCD displays...");
+let lcd_detector = LcdDisplayDetector::new(device_info);
+let lcd_result = lcd_detector.detect_lcd_displays().await;
+match lcd_result {
+    Ok(displays) => {
+        info!("Found {} LCD displays", displays.len());
+        
+        // Test each LCD display
+        for display in displays {
+            info!("Testing LCD: {:?} - {}\"", display.driver, display.size_inch);
+            if let Ok(test_passed) = lcd_detector.test_lcd_display(&display).await {
+                if test_passed {
+                    info!("LCD display test passed");
+                    
+                    // Configure the LCD display
+                    if let Err(e) = lcd_detector.configure_lcd_display(&display).await {
+                        warn!("LCD configuration failed: {}", e);
+                    } else {
+                        info!("LCD display configured successfully");
+                    }
+                } else {
+                    warn!("LCD display test failed");
+                }
+            }
+        }
+    },
+    Err(e) => warn!("LCD detection failed: {}", e),
+}
     // All tests completed
     info!("Hardware tests completed");
     Ok(())

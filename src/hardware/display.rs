@@ -15,7 +15,27 @@ pub struct DisplayConfig {
     pub interface: String,
     pub is_working: bool,
 }
+// القديم:
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum DisplayType {
+    HDMI,
+    DSI,
+    LCD,
+    OLED,
+    Unknown,
+}
 
+// الجديد:
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum DisplayType {
+    HDMI,
+    DSI,
+    LCD_SPI,      // إضافة جديدة
+    LCD_Parallel, // إضافة جديدة
+    OLED_I2C,     // إضافة جديدة
+    OLED_SPI,     // إضافة جديدة
+    Unknown,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisplayTestResult {
     pub config: DisplayConfig,
