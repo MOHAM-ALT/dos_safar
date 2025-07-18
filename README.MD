@@ -1,508 +1,488 @@
-# 🎮 DOS Safar - Universal ARM Boot Manager
+# HackberryPi5 DietPi Complete Setup Tool
 
-**DOS Safar** is an intelligent, auto-connecting boot manager designed specifically for ARM-based gaming handhelds, Raspberry Pi devices, and development boards. It automatically connects to your network within 3 seconds and provides remote troubleshooting capabilities for display, input, and system issues.
+## نظرة عامة على المشروع
 
-## ✨ Key Features
+هذا المشروع عبارة عن **أداة إعداد شاملة ومؤتمتة** لجهاز HackberryPi5، وهو جهاز حاسوب محمول مفتوح المصدر يعتمد على Raspberry Pi 5. الأداة مصممة لتبسيط عملية تثبيت وتكوين نظام التشغيل DietPi مع جميع الإعدادات المطلوبة لضمان عمل جميع مكونات الأجهزة بشكل مثالي.
 
-### 🌐 **Smart Auto-Network Connection**
-- **3-Second Auto-Connect**: Automatically connects to pre-configured networks
-- **Multiple Backup Networks**: Fallback to secondary WiFi networks or open networks
-- **Instant Web Interface**: Remote access via any browser or mobile device
-- **QR Code Access**: Quick mobile connection with auto-generated QR codes
-- **Network Persistence**: Remembers and prioritizes working network configurations
+### الهدف من المشروع
 
-### 🔧 **Remote Hardware Troubleshooting**
-- **Live Screen Viewing**: See exactly what's displayed on your device remotely
-- **Display Configuration**: Adjust resolution, brightness, refresh rate from any device
-- **Input Device Testing**: Virtual keyboard and gaming controller diagnostics
-- **Network Management**: Scan, connect, and manage WiFi networks remotely
-- **Auto-Fix Solutions**: Intelligent automatic problem resolution
+إنشاء **برنامج Windows تلقائي** يقوم بـ:
+- تحميل صورة DietPi المناسبة لـ Raspberry Pi 5
+- حرق النظام على بطاقة SD
+- تطبيق **جميع التكوينات المطلوبة** لـ HackberryPi5
+- ضمان عمل الشاشة اللمسية ولوحة المفاتيح والصوت والمكونات الأخرى
 
-### 🎮 **Gaming-Focused Design**
-- **Gaming Handheld Optimization**: Anbernic RG351, RG552, Miyoo Mini+, Retroid Pocket
-- **D-Pad Navigation**: Full controller support for menu navigation
-- **Small Screen Friendly**: Optimized interfaces for 3.5" gaming displays
-- **Battery Management**: Power monitoring for handheld devices
-- **ROM Management**: Remote file transfer and gaming system organization
+## مواصفات جهاز HackberryPi5
 
-### 💾 **Multi-OS Boot Management**
-- **Auto-Detection**: RetroPie, Batocera, Recalbox, Raspberry Pi OS, Ubuntu
-- **One-Click Switching**: Change operating systems remotely
-- **Configuration Persistence**: Hardware settings saved across OS switches
-- **Image Management**: Upload, install, and remove OS images via web interface
+### الأجهزة المدعومة في هذا المشروع
 
-## 🚀 Quick Start Guide
+#### المعالج والذاكرة
+- **المعالج**: Raspberry Pi 5 (Broadcom BCM2712)
+- **الذاكرة**: 4GB/8GB/16GB LPDDR4X
+- **التخزين**: بطاقة SD (8GB كحد أدنى، 32GB مستحسن)
 
-### Prerequisites
+#### الشاشة واللمس
+- **الشاشة**: 4 بوصة TFT IPS
+- **الدقة**: 720×720 بكسل (مربعة)
+- **نوع اللمس**: شاشة لمسية مقاومة (Resistive Touch)
+- **وحدة التحكم باللمس**: XPT2046 أو ADS7846
+- **الواجهة**: SPI للتحكم، RGB متوازي للبيانات
+- **معدل التحديث**: 60Hz
+
+#### لوحة المفاتيح
+- **النوع**: لوحة مفاتيح BlackBerry أصلية (9900 أو Q20)
+- **الواجهة**: I2C أو USB
+- **الدعم**: VIAL للتخصيص
+- **الميزات**: مفاتيح وظيفية، أزرار اختصار
+
+#### الصوت والاتصال
+- **الصوت**: مكبرات صوت مدمجة عبر Bluetooth
+- **البلوتوث**: مدمج في Pi 5
+- **WiFi**: 802.11ac dual-band مدمج
+- **منافذ USB**: USB-A و USB-C
+
+#### الطاقة والبطارية
+- **البطارية**: 2× 18650 ليثيوم أيون
+- **السعة**: 6000mAh إجمالية
+- **مدة التشغيل**: 3-4 ساعات
+- **الشحن**: USB-C، 2A
+- **إدارة الطاقة**: I2C battery management
+
+#### المدخلات والمخرجات
+- **I2C**: مفعل للمستشعرات ومنفذ Stemma
+- **SPI**: مفعل للشاشة والتحكم
+- **GPIO**: وصول كامل للتوسعات
+- **UART**: مفعل للتطوير والتصحيح
+
+## التحديات التقنية المطلوب حلها
+
+### 1. تكوين الشاشة اللمسية
+**المشكلة**: الشاشة 720×720 تتطلب برامج تشغيل مخصصة
+**الحل المطلوب**:
 ```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install ARM cross-compilation tools (Ubuntu/Debian)
-sudo apt update
-sudo apt install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+# إعدادات config.txt للشاشة
+dtparam=spi=on
+dtoverlay=fbtft,spi0-0,ili9486,width=720,height=720,rotate=0,fps=60,bgr=1
+dtparam=cs=0,dc=22,reset=27,led=18
 ```
 
-### Initial Setup
-
-#### 1. **Configure Your Networks** (IMPORTANT!)
-Edit `config/default.toml` with your WiFi details:
-
-```toml
-[network]
-# Primary WiFi (your home network)
-wifi_ssid = "YourHomeWiFi"          # ← Your WiFi name
-wifi_password = "YourWiFiPassword"   # ← Your WiFi password
-
-# Backup networks (fallback options)
-[[network.backup_networks]]
-ssid = "YourPhoneHotspot"           # ← Your phone's hotspot
-password = "hotspot123"
-
-[[network.backup_networks]]
-ssid = "GuestNetwork"               # ← Any open network
-password = ""                       # ← Empty for open networks
-
-[boot]
-menu_timeout_seconds = 3            # ← 3 second timeout
-auto_web_on_timeout = true          # ← Auto-start web interface
-```
-
-#### 2. **Build and Deploy**
+### 2. تكوين اللمس
+**المشكلة**: تحتاج معايرة دقيقة للاستجابة الصحيحة
+**الحل المطلوب**:
 ```bash
-# Clone and build
-git clone https://github.com/yourusername/dos_safar.git
-cd dos_safar
-
-# Build for your ARM device
-chmod +x build.sh
-./build.sh
-
-# Deploy to your device (example for Raspberry Pi)
-scp dist/dos-safar-raspberry-pi-4-64bit.tar.gz pi@192.168.1.100:~/
-ssh pi@192.168.1.100
-tar -xzf dos-safar-raspberry-pi-4-64bit.tar.gz
-cd dos-safar-raspberry-pi-4-64bit/
-sudo ./install.sh
+# إعدادات اللمس
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
 ```
 
-#### 3. **First Boot Experience**
+### 3. تكوين الصوت والبلوتوث
+**المشكلة**: الصوت يجب أن يعمل عبر البلوتوث فقط
+**الحل المطلوب**:
+- تكوين PulseAudio للبلوتوث
+- إقران تلقائي للمكبرات
+- تعطيل الصوت السلكي
+
+### 4. إعدادات الطاقة
+**المشكلة**: إدارة البطارية عبر I2C
+**الحل المطلوب**:
+- مراقبة جهد البطارية
+- تحذيرات البطارية المنخفضة
+- إدارة الشحن
+
+### 5. تكوين لوحة المفاتيح
+**المشكلة**: لوحة BlackBerry تحتاج إعدادات خاصة
+**الحل المطلوب**:
+- تثبيت VIAL
+- تكوين I2C للتحكم
+- خرائط المفاتيح المخصصة
+
+## متطلبات النظام للأداة
+
+### متطلبات Windows
+- **نظام التشغيل**: Windows 10/11 (64-bit)
+- **الصلاحيات**: تشغيل كمدير (Administrator)
+- **المساحة الحرة**: 5GB كحد أدنى
+- **اتصال الإنترنت**: مطلوب لتحميل DietPi
+
+### البرامج المطلوبة (يتم تحميلها تلقائياً)
+- **7-Zip**: لاستخراج ملفات النظام
+- **dd للويندوز**: لحرق الصور
+- **PowerShell**: للتحميل والتكوين
+
+### الأجهزة المطلوبة
+- **بطاقة SD**: 8GB كحد أدنى، 32GB مستحسن
+- **قارئ بطاقات SD**: USB أو مدمج
+- **HackberryPi5**: الجهاز المستهدف
+
+## الميزات الرئيسية للأداة
+
+### 1. التحميل التلقائي
+- تحميل أحدث إصدار من DietPi لـ Pi 5
+- التحقق من سلامة الملفات
+- إعادة المحاولة في حالة فشل التحميل
+- دعم Resume للتحميلات المتقطعة
+
+### 2. حرق النظام
+- اكتشاف تلقائي لبطاقة SD
+- تحذيرات الأمان لمنع حذف البيانات الخطأ
+- شريط التقدم لمتابعة عملية الحرق
+- التحقق من نجاح العملية
+
+### 3. التكوين الشامل
+**إعدادات config.txt**:
+- تكوين الشاشة والدقة
+- إعدادات اللمس والمعايرة
+- تفعيل I2C وSPI
+- إعدادات الصوت والبلوتوث
+- تحسينات الأداء والطاقة
+
+**إعدادات الشبكة**:
+- تكوين WiFi مع الشبكة المحددة
+- تفعيل SSH للوصول عن بعد
+- إعدادات أمان أساسية
+
+**إعدادات النظام**:
+- كلمة مرور افتراضية محددة
+- المنطقة الزمنية (السعودية)
+- اللغة والتخطيط (عربي/إنجليزي)
+- تثبيت الأدوات الأساسية
+
+### 4. التحقق والاختبار
+- فحص شامل لجميع الملفات المُنشأة
+- التحقق من صحة الإعدادات
+- تقرير مفصل عن حالة التكوين
+- اقتراحات لحل المشاكل
+
+## سير العمل التفصيلي للأداة
+
+### المرحلة 1: التحضير والفحص
 ```
-🎮 DOS Safar Boot Manager
-Device: Raspberry Pi 4B
-═══════════════════════════════════════
-Press ANY KEY to access boot menu...
-Or wait 3 seconds for automatic web interface
-═══════════════════════════════════════
-
-🌐 Searching for networks...
-✅ Connected via WiFi: YourHomeWiFi
-📍 IP Address: 192.168.1.100
-🌐 Web Interface: http://192.168.1.100:8080
-📱 Mobile Access: http://192.168.1.100:8080
-
-📱 QR Code for mobile access:
-┌─────────────────────────┐
-│ █▀▀▀▀▀█ ▀█▀█ █▀▀▀▀▀█ │
-│ █ ███ █ ▀▀▀█ █ ███ █ │
-│ █ ▀▀▀ █ █▀█▀ █ ▀▀▀ █ │
-│ ▀▀▀▀▀▀▀ █ █ █▀▀▀▀▀▀▀ │
-│ ▀█▀█▀▀▀▀█▀█▀▀▀▀█▀█▀█ │
-└─────────────────────────┘
-
-✅ Web interface is ready!
-📱 Open your browser/phone and go to: http://192.168.1.100:8080
-```
-
-## 🔧 Problem Solving Scenarios
-
-### **Scenario 1: Display Issues**
-```
-Problem: Screen not working, wrong resolution, or display corruption
-Solution:
-1. Wait 3 seconds (don't press anything)
-2. DOS Safar auto-connects to your WiFi
-3. Open phone/laptop browser → http://[device-ip]:8080/troubleshoot
-4. Use "Screen Viewer" to see current display
-5. Adjust resolution, brightness, refresh rate
-6. Click "Auto-Fix" for automatic optimization
-```
-
-### **Scenario 2: Keyboard/Controller Problems**
-```
-Problem: Gaming controls not responding, keyboard mapping issues
-Solution:
-1. Access web interface (as above)
-2. Go to "Keyboard Test" section
-3. Use virtual keyboard to test inputs
-4. Test gaming controls (D-pad, buttons, analog sticks)
-5. Apply optimal settings or reset to defaults
-```
-
-### **Scenario 3: Network Configuration**
-```
-Problem: WiFi not connecting, need to change networks
-Solution:
-1. Connect via Ethernet (if available) OR use saved backup networks
-2. Access web interface
-3. Go to "Network Settings"
-4. Scan for new networks
-5. Connect and save new WiFi credentials
-```
-
-### **Scenario 4: OS Management**
-```
-Problem: Need to switch OS, install new system, or remove broken OS
-Solution:
-1. Access web interface
-2. Go to "Systems Manager"
-3. View all available operating systems
-4. Upload new OS images via browser
-5. Switch between systems with one click
-```
-
-## 📱 Web Interface Features
-
-### **Main Dashboard** (`http://device-ip:8080`)
-- **System Status**: CPU, memory, temperature monitoring
-- **Quick Actions**: Remote control, systems manager, settings
-- **Available Systems**: One-click OS switching
-
-### **Hardware Troubleshooting** (`http://device-ip:8080/troubleshoot`)
-- **Live Screen Viewer**: Real-time display capture
-- **Display Settings**: Resolution, brightness, color depth
-- **Input Testing**: Virtual keyboard and gaming controls
-- **Network Management**: WiFi scanning and connection
-- **Auto-Fix Tools**: Intelligent problem resolution
-
-### **Remote Control** (`http://device-ip:8080/remote`)
-- **Virtual D-Pad**: Touch-optimized gaming controls
-- **Action Buttons**: A, B, X, Y, Start, Select
-- **Screen Sharing**: Live display streaming (planned)
-
-### **Systems Manager** (`http://device-ip:8080/systems`)
-- **OS Installation**: Upload and install new systems
-- **Boot Management**: Change default OS, remove systems
-- **File Transfer**: ROM and save file management
-
-## 🎯 Supported Devices
-
-### **Gaming Handhelds**
-- **Anbernic**: RG351P/M/V, RG552, RG35XX series, RG405M
-- **Powkiddy**: RGB10, RGB30, RGB10 Max, RGB20S
-- **Miyoo**: Mini+, Pocket, A30
-- **Retroid**: Pocket 2+, Pocket 3+, Pocket 4
-- **AYANEO**: Pocket Air, Pocket S
-- **GPD**: XP+, XD Plus
-
-### **Single Board Computers**
-- **Raspberry Pi**: 4B, 4B+, 5, 3B+, Zero 2W, CM4
-- **Orange Pi**: 5, 4 LTS, 3 LTS, Zero series
-- **Rock Pi**: 4, 5, S, N10
-- **ODROID**: C4, N2+, XU4, M1
-- **Banana Pi**: BPI-M2, BPI-M5, BPI-M4
-
-### **Operating Systems**
-- **Gaming**: RetroPie, Batocera, Recalbox, EmuELEC, Lakka
-- **Standard**: Raspberry Pi OS, Ubuntu, Debian, Armbian
-- **Custom**: Any ARM-compatible Linux distribution
-
-## ⚙️ Configuration Guide
-
-### **Network Configuration**
-```toml
-[network]
-# Primary network (highest priority)
-wifi_ssid = "MyHomeWiFi"
-wifi_password = "MySecurePassword"
-
-# Backup networks (tried in order)
-[[network.backup_networks]]
-ssid = "MyPhoneHotspot"
-password = "hotspot123"
-
-[[network.backup_networks]]
-ssid = "PublicWiFi"
-password = ""  # Open network
-
-[[network.backup_networks]]
-ssid = "WorkNetwork"
-password = "work2024"
-
-# Network behavior
-auto_scan_open_networks = true      # Scan for open networks if all fail
-prefer_saved_networks = true        # Prioritize configured networks
-max_connection_attempts = 3         # Retry attempts per network
+1. فحص صلاحيات المدير
+2. إنشاء مجلد العمل المؤقت
+3. فحص توفر الأدوات المطلوبة
+4. تحميل الأدوات المفقودة (7-Zip, dd)
+5. اكتشاف بطاقات SD المتاحة
 ```
 
-### **Boot Behavior**
-```toml
-[boot]
-menu_timeout_seconds = 3            # Time to wait for user input
-auto_web_on_timeout = true          # Start web interface on timeout
-keyboard_interrupt_enabled = true   # Any key stops auto-connect
-show_ip_on_screen = true            # Display IP address on device screen
-gaming_mode = true                  # Optimize for gaming handhelds
+### المرحلة 2: تحميل النظام
+```
+1. تحديد رابط تحميل DietPi الأحدث
+2. التحقق من المساحة المتاحة
+3. تحميل الملف مع شريط التقدم
+4. فحص سلامة الملف (الحجم والنوع)
+5. استخراج صورة النظام
 ```
 
-### **Web Interface Settings**
-```toml
-[web]
-port = 8080                         # Web server port
-auto_launch_interface = true        # Start web interface after network
-show_qr_code = true                # Display QR code for mobile access
+### المرحلة 3: حرق النظام
+```
+1. عرض بطاقات SD المتاحة
+2. طلب تأكيد من المستخدم
+3. فحص حالة البطاقة (لا تحتوي على نظام مهم)
+4. حرق الصورة مع مراقبة التقدم
+5. التحقق من نجاح عملية الحرق
 ```
 
-### **Hardware Testing**
-```toml
-[hardware]
-display_test_enabled = true         # Test display on boot
-input_test_enabled = true          # Test gaming controls
-network_test_enabled = true        # Verify network connectivity
-auto_save_working_config = true    # Save working configurations
+### المرحلة 4: التكوين الشامل
+```
+1. اكتشاف بطاقة SD المحروقة
+2. إنشاء ملفات التكوين:
+   - config.txt (إعدادات الأجهزة)
+   - dietpi.txt (إعدادات النظام)
+   - dietpi-wifi.txt (إعدادات الشبكة)
+   - wpa_supplicant.conf (WiFi)
+   - modules (برامج التشغيل)
+   - ssh (تفعيل SSH)
+3. إنشاء سكريبت ما بعد التثبيت
+4. إنشاء ملفات التوثيق والمرجع
 ```
 
-## 🛠️ Development Setup
+### المرحلة 5: التحقق والتقرير
+```
+1. فحص وجود جميع الملفات المطلوبة
+2. التحقق من صحة المحتوى
+3. اختبار قابلية القراءة
+4. إنشاء تقرير التحقق النهائي
+5. تنظيف الملفات المؤقتة
+```
 
-### **Local Testing**
+## الملفات والإعدادات المُنشأة
+
+### 1. ملف config.txt الشامل
+```ini
+# HackberryPi5 Complete Configuration
+# ====================================
+
+# Core System Settings
+arm_boost=1
+over_voltage=2
+arm_freq=2400
+gpu_freq=750
+gpu_mem=128
+
+# Display Configuration - 720x720 TFT
+hdmi_blanking=2
+hdmi_ignore_hotplug=1
+dtparam=spi=on
+dtoverlay=spi0-hw-cs
+
+# TFT Display Driver (ILI9486/ILI9488 compatible)
+dtoverlay=fbtft,spi0-0,ili9486,width=720,height=720,rotate=0,fps=60,bgr=1
+dtparam=cs=0,dc=22,reset=27,led=18
+
+# Touch Screen Support (XPT2046/ADS7846)
+dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900
+
+# I2C Configuration for Sensors and Stemma Port
+dtparam=i2c_arm=on
+dtparam=i2c1=on
+dtparam=i2c_arm_baudrate=400000
+
+# Audio Configuration for Built-in Speakers
+dtparam=audio=on
+audio_pwm_mode=2
+disable_audio_dither=1
+
+# Bluetooth Configuration
+dtparam=krnbt=on
+
+# UART for Debugging and Keyboard
+enable_uart=1
+
+# Power Management for Battery
+dtparam=pwr_led_trigger=mmc0
+dtparam=act_led_trigger=heartbeat
+
+# Keyboard Configuration
+dtoverlay=hid-generic
+
+# Disable unnecessary features to save power
+camera_auto_detect=0
+display_auto_detect=0
+```
+
+### 2. ملف dietpi.txt للنظام
+```ini
+# HackberryPi5 DietPi Configuration
+AUTO_SETUP_AUTOMATED=1
+AUTO_SETUP_GLOBAL_PASSWORD=dietpi123
+
+# Regional settings
+AUTO_SETUP_TIMEZONE=Asia/Riyadh
+AUTO_SETUP_LOCALE=en_US.UTF-8
+AUTO_SETUP_KEYBOARD_LAYOUT=us
+
+# Network settings
+AUTO_SETUP_NET_ETHERNET_ENABLED=1
+AUTO_SETUP_NET_WIFI_ENABLED=1
+
+# SSH settings
+AUTO_SETUP_SSH_SERVER_INDEX=1
+
+# Display settings for HackberryPi5
+AUTO_SETUP_HEADLESS=0
+AUTO_SETUP_AUTOSTART_TARGET_INDEX=7
+
+# Development tools installation
+AUTO_SETUP_INSTALL_SOFTWARE_ID=17  # Git
+AUTO_SETUP_INSTALL_SOFTWARE_ID=130 # Python
+AUTO_SETUP_INSTALL_SOFTWARE_ID=9   # Build tools
+AUTO_SETUP_INSTALL_SOFTWARE_ID=16  # Desktop environment
+AUTO_SETUP_INSTALL_SOFTWARE_ID=103 # Node.js
+
+AUTO_SETUP_BOOT_WAIT_FOR_NETWORK=2
+SURVEY_OPTED_IN=0
+```
+
+### 3. ملف dietpi-wifi.txt للشبكة
+```ini
+# HackberryPi5 WiFi Configuration
+aWIFI_COUNTRYCODE[0]='SA'
+aWIFI_SSID[0]='A7rf'
+aWIFI_KEY[0]='11111111aA'
+aWIFI_KEYMGR[0]='WPA-PSK'
+aWIFI_ENABLED=1
+```
+
+### 4. ملف modules لبرامج التشغيل
+```
+# HackberryPi5 Kernel Modules
+spi-bcm2835
+fbtft_device
+fbtft
+fb_ili9486
+ads7846
+evdev
+uinput
+```
+
+### 5. سكريبت ما بعد التثبيت
 ```bash
-# Test web interface locally
-cargo run --bin web_server_test
-# Open browser: http://localhost:8080
+#!/bin/bash
+# HackberryPi5 Post-Install Configuration Script
 
-# Test with skipped hardware tests
-cargo run -- --skip-tests --web-only
+echo "Starting HackberryPi5 post-install setup..."
 
-# Full development build
-cargo build --release
+# Update system
+apt update && apt upgrade -y
+
+# Install essential packages
+apt install -y git vim nano htop curl wget unzip
+apt install -y build-essential python3-pip python3-dev
+apt install -y nodejs npm
+apt install -y i2c-tools spi-tools
+
+# Install touch screen utilities
+apt install -y xinput xinput-calibrator
+apt install -y xserver-xorg-input-evdev
+
+# Install display utilities
+apt install -y xrandr fbset
+
+# Configure touchscreen
+modprobe ads7846
+modprobe evdev
+
+# Set up GPIO access
+usermod -a -G gpio,spi,i2c,audio,video dietpi
+
+# Configure display settings
+export DISPLAY=:0
+export FRAMEBUFFER=/dev/fb1
+
+# Create touchscreen calibration
+mkdir -p /etc/X11/xorg.conf.d/
+cat > /etc/X11/xorg.conf.d/99-calibration.conf << 'EOF'
+Section "InputClass"
+    Identifier "calibration"
+    MatchProduct "ADS7846 Touchscreen"
+    Option "Calibration" "200 3900 200 3900"
+    Option "SwapAxes" "0"
+    Option "InvertX" "0"
+    Option "InvertY" "0"
+EndSection
+EOF
+
+# Set up framebuffer for console
+echo 'FRAMEBUFFER=/dev/fb1' >> /etc/environment
+
+# Configure keyboard
+dpkg-reconfigure -f noninteractive keyboard-configuration
+
+# Install additional drivers
+apt install -y device-tree-compiler
+
+echo "HackberryPi5 setup completed successfully!"
 ```
 
-### **Cross-Compilation for ARM**
+## الاختبارات والتحقق
+
+### اختبارات الأجهزة
 ```bash
-# Add ARM targets
-rustup target add armv7-unknown-linux-gnueabihf  # ARM32 (Pi 3)
-rustup target add aarch64-unknown-linux-gnu      # ARM64 (Pi 4/5)
+# فحص الشاشة
+fbset -fb /dev/fb1
 
-# Build for specific target
-cargo build --release --target armv7-unknown-linux-gnueabihf
+# فحص اللمس
+evtest /dev/input/event0
 
-# Or use the build script
-./build.sh --target=arm64  # For Pi 4/5
-./build.sh --target=arm32  # For Pi 3
+# فحص I2C
+i2cdetect -y 1
+
+# فحص SPI
+ls /dev/spi*
+
+# فحص WiFi
+iwconfig
+
+# فحص البلوتوث
+bluetoothctl show
 ```
 
-### **Project Structure**
-```
-dos_safar/
-├── src/
-│   ├── hardware/              # Device detection & testing
-│   │   ├── device_detect.rs   # Auto-identify ARM devices
-│   │   ├── display.rs         # Screen configuration & testing
-│   │   ├── input.rs           # Gaming controls & keyboard
-│   │   ├── network.rs         # WiFi/Ethernet management
-│   │   └── enhanced_network.rs # Smart auto-connect system
-│   ├── bootloader/            # OS management & boot menu
-│   │   ├── menu.rs            # Gaming-friendly boot interface
-│   │   └── os_manager.rs      # Multi-OS switching
-│   ├── remote/                # Web interface & remote control
-│   │   ├── web_server.rs      # HTTP server & API endpoints
-│   │   └── api.rs             # REST API for remote management
-│   ├── utils/                 # Configuration & utilities
-│   │   ├── config.rs          # TOML configuration management
-│   │   └── logger.rs          # Logging with gaming emojis
-│   └── tools/                 # Development utilities
-│       ├── web_test.rs        # Local web server testing
-│       └── image_builder.rs   # OS image creation tools
-├── config/
-│   └── default.toml           # Main configuration file
-├── assets/web/                # Web interface files
-│   ├── index.html             # Main dashboard
-│   ├── troubleshoot.html      # Hardware troubleshooting
-│   └── css/style.css          # Responsive styling
-└── dist/                      # Build output directory
-```
+### اختبارات النظام
+- فحص إقلاع النظام بدون أخطاء
+- اختبار استجابة الشاشة اللمسية
+- اختبار اتصال WiFi والبلوتوث
+- فحص عمل لوحة المفاتيح
+- اختبار إدارة البطارية
 
-## 🔍 Troubleshooting
+## استكشاف الأخطاء وحلها
 
-### **Common Issues**
+### مشاكل الشاشة
+**المشكلة**: الشاشة لا تعمل أو تظهر فارغة
+**الحلول**:
+1. فحص اتصالات SPI
+2. التحقق من برامج التشغيل في config.txt
+3. استخدام إعداد بديل: `dtoverlay=waveshare35a`
+4. فحص سجلات النظام: `/var/log/Xorg.0.log`
 
-#### **Network Connection Fails**
-```bash
-# Check WiFi interface
-sudo iwconfig
+### مشاكل اللمس
+**المشكلة**: اللمس لا يستجيب أو غير دقيق
+**الحلول**:
+1. تشغيل أداة المعايرة: `sudo xinput_calibrator`
+2. فحص إعدادات ads7846
+3. اختبار جهاز اللمس: `evtest`
+4. تحديث ملف المعايرة
 
-# Manual network test
-sudo iwlist wlan0 scan | grep "YourNetworkName"
+### مشاكل الشبكة
+**المشكلة**: عدم اتصال WiFi
+**الحلول**:
+1. فحص قوة الإشارة
+2. التحقق من إعدادات wpa_supplicant
+3. إعادة تشغيل خدمة الشبكة
+4. فحص logs: `journalctl -u wpa_supplicant`
 
-# Check configuration
-cat config/default.toml | grep wifi_ssid
+### مشاكل الصوت
+**المشكلة**: عدم عمل الصوت عبر البلوتوث
+**الحلول**:
+1. إعادة إقران الجهاز
+2. فحص إعدادات PulseAudio
+3. تحديث برامج التشغيل
+4. استخدام أدوات التشخيص
 
-# Restart networking
-sudo systemctl restart networking
-```
+## التخصيص والتطوير
 
-#### **Web Interface Not Accessible**
-```bash
-# Check if DOS Safar is running
-sudo systemctl status dos-safar
+### تخصيص الإعدادات
+المستخدمون يمكنهم تعديل:
+- شبكة WiFi وكلمة المرور
+- المنطقة الزمنية واللغة
+- إعدادات الشاشة والدوران
+- خرائط لوحة المفاتيح
+- البرامج المثبتة افتراضياً
 
-# Check firewall
-sudo ufw status
+### إضافة ميزات جديدة
+- دعم شاشات أخرى
+- إعدادات بطارية مخصصة
+- أنماط طاقة متقدمة
+- تكامل مع خدمات سحابية
 
-# Test local web server
-cargo run --bin web_server_test
-```
+## الأمان والخصوصية
 
-#### **Display Issues**
-```bash
-# Check framebuffer
-ls -la /dev/fb*
+### الإعدادات الأمنية الافتراضية
+- تغيير كلمة المرور الافتراضية
+- تفعيل جدار الحماية
+- تحديثات أمنية تلقائية
+- تشفير اتصالات SSH
 
-# Test display manually
-sudo ./dos_safar --skip-tests
+### توصيات الأمان
+- استخدام مفاتيح SSH بدلاً من كلمات المرور
+- تفعيل المصادقة ثنائية العامل
+- مراقبة سجلات النظام
+- تحديث النظام بانتظام
 
-# Reset display settings
-sudo rm -f /boot/dos_safar/display/working_config.toml
-```
+## الدعم والمجتمع
 
-#### **Gaming Controls Not Working**
-```bash
-# Check input devices
-ls -la /dev/input/
+### الموارد الرسمية
+- **موقع المطور**: ZitaoTech
+- **GitHub**: github.com/ZitaoTech/HackberryPi5
+- **Tindie Store**: متجر القطع والأجهزة
+- **Discord Server**: مجتمع المطورين
 
-# Test controller detection
-sudo ./dos_safar --config config/debug.toml
+### المراجع التقنية
+- دليل Raspberry Pi 5 الرسمي
+- وثائق DietPi
+- مراجع SPI وI2C
+- دلائل تطوير Linux المدمج
 
-# Check for conflicts
-sudo pkill -f "retropie\|emulationstation"
-```
+## الخلاصة
 
-### **Debug Mode**
-```bash
-# Enable debug logging
-export RUST_LOG=debug
-sudo ./dos_safar
+هذه الأداة تهدف إلى جعل عملية إعداد HackberryPi5 سهلة ومؤتمتة بالكامل، مع ضمان عمل جميع المكونات بشكل مثالي من أول تشغيل. الأداة تتضمن جميع التكوينات المطلوبة بناءً على المواصفات الرسمية للجهاز والمتطلبات التقنية المحددة.
 
-# Web-only mode for testing
-sudo ./dos_safar --web-only
-
-# Skip all hardware tests
-sudo ./dos_safar --skip-tests
-```
-
-## 🚀 Advanced Features
-
-### **Custom OS Integration**
-```rust
-// Add custom OS detection in src/bootloader/menu.rs
-fn identify_custom_os(&self, boot_path: &str) -> Result<OperatingSystem> {
-    // Custom detection logic
-}
-```
-
-### **Hardware Extensions**
-```rust
-// Extend device detection in src/hardware/device_detect.rs
-async fn detect_custom_device(&self) -> DeviceType {
-    // Custom device detection
-}
-```
-
-### **API Extensions**
-```rust
-// Add custom endpoints in src/remote/web_server.rs
-async fn custom_api_endpoint() -> Json<CustomResponse> {
-    // Custom API logic
-}
-```
-
-## 📊 Performance Optimization
-
-### **Memory Usage**
-- **Boot Manager**: ~64MB RAM minimum
-- **Web Interface**: ~32MB additional
-- **Total Footprint**: <100MB (perfect for gaming handhelds)
-
-### **Storage Requirements**
-- **Boot Partition**: 256MB minimum
-- **Configuration**: <1MB
-- **Web Assets**: <5MB
-
-### **Network Performance**
-- **Connection Time**: <3 seconds typical
-- **Web Interface**: <1 second load time
-- **Remote Control**: <50ms input latency
-
-## 🤝 Contributing
-
-### **Development Guidelines**
-1. **English Only**: All code, comments, and documentation in English
-2. **Gaming Focus**: Prioritize gaming handheld compatibility
-3. **Simplicity**: Practical solutions over complex architecture
-4. **ARM Optimization**: Test on real ARM hardware when possible
-
-### **Pull Request Process**
-```bash
-# Fork the repository
-git clone https://github.com/yourusername/dos_safar.git
-
-# Create feature branch
-git checkout -b feature/amazing-feature
-
-# Test on ARM device
-./build.sh && scp dist/*.tar.gz pi@device:~/
-
-# Submit pull request with test results
-```
-
-### **Testing Checklist**
-- [ ] Builds successfully for ARM32 and ARM64
-- [ ] Network auto-connect works with multiple networks
-- [ ] Web interface accessible from mobile devices
-- [ ] Gaming controls responsive in web interface
-- [ ] Display settings persist across reboots
-- [ ] OS detection works for target gaming systems
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Rust Community**: Excellent ARM cross-compilation support
-- **Gaming Handheld Community**: Inspiration and testing feedback  
-- **Raspberry Pi Foundation**: Making ARM development accessible
-- **RetroPie/Batocera Teams**: Showing the potential of ARM gaming
-
-## 📞 Support & Community
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/dos_safar/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/dos_safar/discussions)
-- **Wiki**: [Project Wiki](https://github.com/yourusername/dos_safar/wiki)
-- **Discord**: [DOS Safar Community](https://discord.gg/dossafar) (coming soon)
-
-## 🎯 Roadmap
-
-### **Phase 1 - Core Features** ✅
-- [x] Smart network auto-connection
-- [x] Remote hardware troubleshooting
-- [x] Gaming handheld optimization
-- [x] Web-based configuration
-
-### **Phase 2 - Advanced Features** 🚧
-- [ ] Live screen streaming
-- [ ] ROM management system
-- [ ] Save state synchronization
-- [ ] Multi-device management
-
-### **Phase 3 - Ecosystem** 📋
-- [ ] Mobile companion app
-- [ ] Cloud configuration backup
-- [ ] Community OS repository
-- [ ] Plugin system for custom hardware
-
----
-
-**DOS Safar** - Making ARM device management effortless with intelligent auto-networking and remote troubleshooting! 🎮🚀
-
-*Perfect for gaming handhelds, Raspberry Pi projects, and any ARM device that needs reliable remote management.*
+**الهدف النهائي**: إنشاء تجربة "Plug and Play" حقيقية لمستخدمي HackberryPi5، حيث يمكن للمستخدم حرق النظام وتشغيل الجهاز مباشرة بدون الحاجة لأي تكوينات إضافية.
